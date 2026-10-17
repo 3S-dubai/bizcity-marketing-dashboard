@@ -355,6 +355,8 @@
     <div class="stat won-amt"><div class="num" id="w-total">-</div><div class="label">Won Amount (AED)</div></div>
     <div class="stat"><div class="num" id="w-count">-</div><div class="label">Clients Won</div></div>
     <div class="stat"><div class="num" id="w-avg">-</div><div class="label">Average per Client (AED)</div></div>
+    <div class="stat"><div class="num" id="w-spend">-</div><div class="label">Meta Ad Spend (AED)</div><div class="hint" id="w-spend-hint"></div></div>
+    <div class="stat roas"><div class="num" id="w-roas">-</div><div class="label">Won per AED 1 of Ad Spend</div></div>
   </div>
   <div class="wins-split">
     <div class="table-card"><div class="table-scroll"><div id="w-by-rep" class="loading">Loading…</div></div></div>
@@ -1129,6 +1131,13 @@ function renderWins() {
   document.getElementById('w-count').textContent = fmtInt(clients);
   document.getElementById('w-avg').textContent = clients ? fmtInt(Math.round(total / clients)) : '-';
   document.getElementById('w-pill').textContent = clients + ' client' + (clients === 1 ? '' : 's') + (list.length !== clients ? ', ' + list.length + ' rows' : '');
+  // Meta ad spend for the same months (Type=month rows, whole ad account); May-Aug are Meta account months (about 11 h off UAE)
+  const mrows = META.filter(x => x.type === 'month' && (!mFrom || x.period >= mFrom) && (!mTo || x.period <= mTo));
+  const spend = mrows.reduce((t, x) => t + x.spend, 0);
+  document.getElementById('w-spend').textContent = mrows.length ? fmtInt(Math.round(spend)) : '-';
+  document.getElementById('w-spend-hint').textContent = mrows.length ? mrows.length + ' month' + (mrows.length === 1 ? '' : 's') +
+    (mrows.some(x => x.status === 'Meta days') ? ' (≈ for months before Sep)' : '') : 'no Meta data for these months';
+  document.getElementById('w-roas').textContent = (known.length && spend) ? fmtAED(total / spend) : '-';
   const money = v => v === null ? '-' : fmtInt(Math.round(v));
   const group = (key, title, el) => {
     const g = {};

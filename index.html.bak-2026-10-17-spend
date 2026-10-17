@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marketing Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #142c4a;
+    --navy-light: #1f3f68;
+    --blue: #2569d6;
+    --blue-light: #eaf1fd;
+    --green: #16925a;
+    --green-light: #e8f7ef;
+    --red: #d1393f;
+    --red-light: #fdecec;
+    --amber: #b8860b;
+    --ink: #1a2230;
+    --muted: #6b7684;
+    --border: #e7eaef;
+    --bg: #f3f5f9;
+    --card: #ffffff;
+    --shadow: 0 1px 2px rgba(20,44,74,.04), 0 6px 20px rgba(20,44,74,.06);
+    --shadow-hover: 0 2px 4px rgba(20,44,74,.06), 0 10px 28px rgba(20,44,74,.09);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; }
+  .topbar { background:linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%); padding:28px 16px 64px; }
+  .topbar-inner { max-width:1240px; margin:0 auto; }
+  .topbar h1 { color:#fff; margin:0; font-size:26px; font-weight:800; letter-spacing:-.02em; }
+  .topbar .sub { color:rgba(255,255,255,.72); margin-top:6px; font-size:14px; font-weight:500; }
+  .wrap { max-width:1240px; margin:-42px auto 60px; padding:0 16px; }
+  h2 { color:var(--navy); font-size:15px; margin:0; font-weight:700; letter-spacing:-.01em; }
+  .card-title-row { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+  .count-pill { font-size:11px; font-weight:700; color:var(--blue); background:var(--blue-light); padding:3px 9px; border-radius:20px; }
+
+  .filters { display:flex; flex-wrap:wrap; gap:16px; margin-bottom:22px; background:var(--card); padding:20px 22px; border-radius:var(--radius); box-shadow:var(--shadow); align-items:flex-end; border:1px solid var(--border); }
+  .filters .field { display:flex; flex-direction:column; }
+  .filters label { font-size:11px; color:var(--muted); display:block; margin-bottom:6px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; }
+  .filters select, .filters input[type=date] {
+    padding:9px 12px; border-radius:9px; border:1.5px solid var(--border); min-width:150px;
+    font-size:13.5px; font-family:inherit; color:var(--ink); background:#fbfcfd; transition:border-color .15s, box-shadow .15s;
+  }
+  .filters select:hover, .filters input[type=date]:hover { border-color:#c6cedb; }
+  .filters select:focus, .filters input[type=date]:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(37,105,214,.14); }
+  .date-range { display:flex; gap:8px; align-items:center; }
+  .date-range span { color:var(--muted); font-size:13px; font-weight:600; }
+  .clear-btn {
+    padding:9px 16px; border-radius:9px; border:1.5px solid var(--border); background:#fff; font-size:13px;
+    cursor:pointer; color:var(--navy); font-weight:700; transition:background .15s, border-color .15s;
+  }
+  .clear-btn:hover { background:var(--bg); border-color:#c6cedb; }
+
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:16px; margin-bottom:24px; }
+  .stat { background:var(--card); border-radius:var(--radius); padding:20px 22px; box-shadow:var(--shadow); border:1px solid var(--border); position:relative; overflow:hidden; }
+  .stat::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--navy); }
+  .stat .num { font-size:30px; font-weight:800; color:var(--navy); line-height:1.1; letter-spacing:-.02em; }
+  .stat .label { font-size:11.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:6px; font-weight:700; }
+  .stat.won::before { background:var(--green); }
+  .stat.won .num { color:var(--green); }
+  .stat.lost::before { background:var(--red); }
+  .stat.lost .num { color:var(--red); }
+
+  .breakdowns { display:grid; grid-template-columns:repeat(auto-fit,minmax(330px,1fr)); gap:18px; margin-bottom:24px; }
+  .breakdown-card { background:var(--card); border-radius:var(--radius); padding:20px 22px; box-shadow:var(--shadow); border:1px solid var(--border); transition:box-shadow .2s; }
+  .breakdown-card:hover { box-shadow:var(--shadow-hover); }
+  .breakdown-card .chart-wrap { position:relative; height:260px; }
+  .breakdown-card .chart-empty { height:260px; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+
+  .table-section { margin-bottom:28px; }
+  .table-section-title { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .table-section-title h2 { font-size:16px; }
+  .table-section-title .count-pill.lost { color:var(--red); background:var(--red-light); }
+  .table-card { background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); border:1px solid var(--border); overflow:hidden; }
+  .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table { width:100%; min-width:640px; border-collapse:collapse; }
+  th, td { padding:13px 16px; text-align:left; font-size:13.5px; border-bottom:1px solid var(--border); }
+  th { background:#fbfcfe; color:var(--navy); font-weight:700; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; position:sticky; top:0; border-bottom:2px solid var(--border); }
+  tbody tr { transition:background .12s; }
+  tbody tr:hover td { background:#f7f9fd; }
+  tbody tr:last-child td { border-bottom:none; }
+  td.name-cell a { color:var(--blue); text-decoration:none; font-weight:600; }
+  td.name-cell a:hover { text-decoration:underline; }
+  td.name-cell a::after { content:'↗'; font-size:11px; margin-left:4px; opacity:.6; }
+  a.ad-source-link { display:inline-block; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:bottom; color:var(--blue); text-decoration:none; }
+  a.ad-source-link:hover { text-decoration:underline; }
+
+  .badge { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; letter-spacing:.01em; display:inline-block; }
+  .badge.Open { background:var(--blue-light); color:var(--blue); }
+  .badge.Won { background:var(--green-light); color:var(--green); }
+  .badge.Lost { background:var(--red-light); color:var(--red); }
+
+  .empty, .loading { text-align:center; padding:56px 20px; color:var(--muted); font-size:14px; }
+  .loading::before { content:''; display:block; width:28px; height:28px; margin:0 auto 14px; border-radius:50%; border:3px solid var(--border); border-top-color:var(--blue); animation:spin .8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .pagination { display:flex; align-items:center; justify-content:center; gap:14px; margin-top:18px; }
+  .pagination button {
+    padding:8px 18px; border-radius:9px; border:1.5px solid var(--border); background:var(--card);
+    font-size:13px; cursor:pointer; color:var(--navy); font-weight:700; transition:background .15s, border-color .15s;
+  }
+  .pagination button:disabled { color:#c3cad4; border-color:var(--border); cursor:not-allowed; background:#fafbfc; }
+  .pagination button:not(:disabled):hover { background:var(--blue-light); border-color:var(--blue); }
+  .pagination .page-info { font-size:13px; color:var(--muted); font-weight:600; }
+
+  @media (max-width:900px) {
+    .breakdowns { grid-template-columns:1fr; }
+  }
+
+  @media (max-width:768px) {
+    .filters { flex-direction:column; align-items:stretch; gap:14px; padding:18px; }
+    .filters .field { width:100%; }
+    .filters select, .filters input[type=date] { width:100%; min-width:0; }
+    .date-range { flex-wrap:wrap; }
+    .date-range input[type=date] { flex:1; min-width:0; }
+    .clear-btn { width:100%; }
+    .stats { grid-template-columns:repeat(2,1fr); gap:12px; }
+  }
+
+  @media (max-width:640px) {
+    .topbar { padding:22px 16px 46px; }
+    .topbar h1 { font-size:20px; }
+    .topbar .sub { font-size:12.5px; }
+    .wrap { margin-top:-28px; padding:0 12px; }
+    .stat { padding:16px 16px; }
+    .stat .num { font-size:24px; }
+    .breakdown-card { padding:16px; }
+    .breakdown-card .chart-wrap, .breakdown-card .chart-empty { height:220px; }
+    th, td { padding:10px 12px; font-size:12.5px; white-space:nowrap; }
+    .pagination { flex-wrap:wrap; gap:10px; }
+    .pagination .page-info { order:3; width:100%; text-align:center; }
+    a.ad-source-link { max-width:140px; }
+  }
+
+  @media (max-width:420px) {
+    .stats { grid-template-columns:1fr 1fr; }
+    .topbar h1 { font-size:18px; }
+  }
+
+  /* ---- tabs + Meta Ads tab (added 15 Oct 2026) ---- */
+  .tabs { display:flex; gap:6px; margin-top:18px; flex-wrap:wrap; }
+  .tab-btn { padding:9px 18px; border-radius:9px 9px 0 0; border:0; background:rgba(255,255,255,.14); color:#fff; font:700 13.5px 'Inter',sans-serif; cursor:pointer; }
+  .tab-btn[aria-selected="true"] { background:#fff; color:var(--navy); }
+  .tab-panel[hidden] { display:none; }
+  .stat.spend::before { background:var(--blue); }
+  .stat.conv::before { background:var(--green); }
+  .stat.reach::before { background:var(--amber); }
+  .stat .hint { font-size:11.5px; color:var(--muted); margin-top:4px; font-weight:500; }
+  .meta-note { font-size:12.5px; color:var(--muted); margin:-8px 0 20px; }
+  .wide-card { background:var(--card); border-radius:var(--radius); padding:20px 22px; box-shadow:var(--shadow); border:1px solid var(--border); margin-bottom:24px; }
+  .wide-card .chart-wrap { position:relative; height:300px; }
+  td.num, th.num { text-align:right; font-variant-numeric:tabular-nums; }
+  /* one compact size on every tab (CRM Leads, Overview, Meta Ads, Wins) */
+  .tab-panel .filters { padding:12px 16px; margin-bottom:14px; gap:12px; }
+  .tab-panel .filters label { font-size:10px; margin-bottom:4px; }
+  .tab-panel .filters select, .tab-panel .filters input[type=date] { padding:6px 10px; font-size:13px; }
+  .tab-panel .clear-btn { padding:6px 12px; font-size:12.5px; }
+  .tab-panel .stats { grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:14px; }
+  .tab-panel .stat { padding:10px 14px; border-radius:10px; }
+  .tab-panel .stat .num { font-size:20px; }
+  .tab-panel .stat .label { font-size:10px; margin-top:3px; }
+  .tab-panel .stat .hint { font-size:10.5px; margin-top:2px; }
+  .tab-panel .meta-note { font-size:11.5px; margin:-4px 0 14px; }
+  .tab-panel .breakdowns { gap:12px; margin-bottom:16px; }
+  .tab-panel .breakdown-card, .tab-panel .wide-card { padding:14px 16px; border-radius:10px; margin-bottom:16px; }
+  .tab-panel .breakdowns .breakdown-card { margin-bottom:0; }
+  .tab-panel .breakdown-card .chart-wrap, .tab-panel .breakdown-card .chart-empty, .tab-panel .wide-card .chart-wrap { height:220px; }
+  .tab-panel h2 { font-size:14px; }
+  .tab-panel .table-section { margin-bottom:18px; }
+  .tab-panel .table-section-title h2 { font-size:14px; }
+  .tab-panel .table-card { border-radius:10px; }
+  .tab-panel th, .tab-panel td { padding:8px 12px; font-size:12.5px; }
+  .tab-panel th { font-size:10.5px; }
+  .tab-panel .pagination button { padding:6px 14px; font-size:12.5px; }
+  .wins-split table { min-width:0; }
+  .filters .field[hidden] { display:none !important; }
+  th.sortable { cursor:pointer; user-select:none; white-space:nowrap; }
+  .qb { display:inline-block; padding:2px 7px; border-radius:12px; font-size:10.5px; font-weight:700; margin:1px 3px 1px 0; white-space:nowrap; }
+  .qb.q3 { background:var(--green); color:#fff; } .qb.q2 { background:var(--blue-light); color:var(--blue); }
+  .qb.q1 { background:#fff3d6; color:#8a6100; } .qb.q0 { background:var(--red-light); color:var(--red); } .qb.qn { background:#eef0f4; color:var(--muted); }
+  .q-avg { font-size:12px; color:var(--muted); margin:-4px 0 10px; } .q-avg b { color:var(--ink); }
+  th.sortable:hover { color:var(--blue); }
+  .tab-panel .stats.eight { grid-template-columns:repeat(4,1fr); }
+  @media (max-width:700px) { .tab-panel .stats.eight { grid-template-columns:repeat(2,1fr); } }
+  tr.ad-active td { background:var(--green-light); font-weight:600; }
+  tr.ad-active td:first-child { box-shadow:inset 4px 0 0 var(--green); }
+  tr.ad-off td { color:var(--muted); }
+  .badge.Active { background:var(--green); color:#fff; }
+  .badge.Off { background:#eef0f4; color:var(--muted); }
+  .wins-split { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:14px; margin-bottom:16px; }
+  .ov-group { font-size:11px; font-weight:800; color:var(--navy); text-transform:uppercase; letter-spacing:.05em; margin:2px 0 6px; }
+  .stat.won-amt::before, .stat.roas::before { background:var(--green); }
+  .stat.won-amt .num { color:var(--green); }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <h1>Marketing Dashboard</h1>
+    <div class="sub">CRM leads referred via Respond.io - synced daily from Odoo</div>
+    <div class="tabs" role="tablist">
+      <button type="button" class="tab-btn" role="tab" id="tabbtn-overview" aria-selected="false" aria-controls="tab-overview">Overview</button>
+      <button type="button" class="tab-btn" role="tab" id="tabbtn-crm" aria-selected="true" aria-controls="tab-crm">CRM Leads</button>
+      <button type="button" class="tab-btn" role="tab" id="tabbtn-meta" aria-selected="false" aria-controls="tab-meta">Meta Ads</button>
+      <button type="button" class="tab-btn" role="tab" id="tabbtn-wins" aria-selected="false" aria-controls="tab-wins">Wins</button>
+    </div>
+  </div>
+</div>
+<div class="wrap tab-panel" id="tab-crm" role="tabpanel">
+
+  <div class="filters">
+    <div class="field">
+      <label for="f-quick">Period</label>
+      <select id="f-quick"><option value="month">This month</option><option value="today">Today</option><option value="yesterday">Yesterday</option><option value="last7">Last 7 days</option><option value="lastmonth">Last month</option><option value="all">All time</option><option value="custom">Custom dates</option></select>
+    </div>
+    <div class="field">
+      <label>Creation Date Range</label>
+      <div class="date-range">
+        <input type="date" id="f-from" title="Created from">
+        <span>to</span>
+        <input type="date" id="f-to" title="Created to">
+      </div>
+    </div>
+    <div class="field">
+      <label for="f-stage">Stage</label>
+      <select id="f-stage"><option value="">All stages</option></select>
+    </div>
+    <div class="field">
+      <label for="f-sales">Salesperson</label>
+      <select id="f-sales"><option value="">All salespeople</option></select>
+    </div>
+    <div class="field">
+      <label for="f-referred">Referred By</label>
+      <select id="f-referred"><option value="">All sources</option></select>
+    </div>
+    <div class="field">
+      <label for="f-company">Company</label>
+      <select id="f-company"><option value="">All companies</option></select>
+    </div>
+    <div class="field">
+      <button type="button" class="clear-btn" id="f-clear">Clear filters</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="s-total">-</div><div class="label">Total Leads</div></div>
+    <div class="stat"><div class="num" id="s-open">-</div><div class="label">Open</div></div>
+    <div class="stat won"><div class="num" id="s-won">-</div><div class="label">Won</div></div>
+    <div class="stat lost"><div class="num" id="s-lost">-</div><div class="label">Lost</div></div>
+  </div>
+
+  <div class="breakdowns">
+    <div class="breakdown-card">
+      <div class="card-title-row"><h2>Leads by Stage</h2></div>
+      <div class="chart-wrap"><canvas id="chart-stage"></canvas></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="card-title-row"><h2>Leads by Salesperson</h2></div>
+      <div class="chart-wrap"><canvas id="chart-sales"></canvas></div>
+    </div>
+    <div class="breakdown-card">
+      <div class="card-title-row"><h2>Lost Reasons</h2></div>
+      <div class="chart-wrap"><canvas id="chart-lost"></canvas></div>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <div class="table-section-title">
+      <h2>Active Leads</h2>
+      <span class="count-pill" id="active-count-pill">-</span>
+    </div>
+    <div class="table-card">
+      <div class="table-scroll">
+        <div id="table-area-active" class="loading">Loading leads…</div>
+      </div>
+    </div>
+    <div class="pagination" id="pagination-active" style="display:none;">
+      <button type="button" id="page-prev-active">&larr; Prev</button>
+      <span class="page-info" id="page-info-active"></span>
+      <button type="button" id="page-next-active">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <div class="table-section-title">
+      <h2>Lost Leads</h2>
+      <span class="count-pill lost" id="lost-count-pill">-</span>
+    </div>
+    <div class="table-card">
+      <div class="table-scroll">
+        <div id="table-area-lost" class="loading">Loading leads…</div>
+      </div>
+    </div>
+    <div class="pagination" id="pagination-lost" style="display:none;">
+      <button type="button" id="page-prev-lost">&larr; Prev</button>
+      <span class="page-info" id="page-info-lost"></span>
+      <button type="button" id="page-next-lost">Next &rarr;</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="wrap tab-panel" id="tab-overview" role="tabpanel" hidden>
+  <div class="filters">
+    <div class="field">
+      <label for="o-month">Period</label>
+      <select id="o-month"></select>
+    </div>
+    <div class="field" id="o-dates" hidden>
+      <label>Days</label>
+      <div class="date-range">
+        <input type="date" id="o-from" title="From"><span>to</span><input type="date" id="o-to" title="To">
+      </div>
+    </div>
+  </div>
+  <div class="ov-group">Paid ads (Meta)</div>
+  <div class="stats">
+    <div class="stat spend"><div class="num" id="o-spend">-</div><div class="label">Ad Spend (AED)</div></div>
+    <div class="stat conv"><div class="num" id="o-conv">-</div><div class="label">Conversations Started</div></div>
+    <div class="stat reach"><div class="num" id="o-reach">-</div><div class="label">Total Reach</div><div class="hint">unique people</div></div>
+    <div class="stat"><div class="num" id="o-cpc">-</div><div class="label">Cost per Conversation (AED)</div></div>
+  </div>
+  <div class="ov-group">CRM leads (BizCity, Odoo, all sources)</div>
+  <div class="stats">
+    <div class="stat"><div class="num" id="o-leads">-</div><div class="label">Total Leads</div></div>
+    <div class="stat"><div class="num" id="o-open">-</div><div class="label">Open</div></div>
+    <div class="stat won"><div class="num" id="o-wonn">-</div><div class="label">Won</div></div>
+    <div class="stat lost"><div class="num" id="o-lost">-</div><div class="label">Lost</div></div>
+    <div class="stat"><div class="num" id="o-cpl">-</div><div class="label">Ad Spend per Lead (AED)</div></div>
+  </div>
+  <div class="ov-group">Business won</div>
+  <div class="stats">
+    <div class="stat won-amt"><div class="num" id="o-won">-</div><div class="label">Won Amount (AED)</div><div class="hint" id="o-won-hint"></div></div>
+    <div class="stat roas"><div class="num" id="o-roas">-</div><div class="label">Won per AED 1 of Ad Spend</div></div>
+  </div>
+  <div class="meta-note" id="o-note">Loading…</div>
+</div>
+
+<div class="wrap tab-panel" id="tab-wins" role="tabpanel" hidden>
+  <div class="filters">
+    <div class="field">
+      <label for="w-month">From month</label>
+      <select id="w-month"><option value="">Earliest</option></select>
+    </div>
+    <div class="field">
+      <label for="w-month-to">To month</label>
+      <select id="w-month-to"><option value="">Latest</option></select>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat won-amt"><div class="num" id="w-total">-</div><div class="label">Won Amount (AED)</div></div>
+    <div class="stat"><div class="num" id="w-count">-</div><div class="label">Clients Won</div></div>
+    <div class="stat"><div class="num" id="w-avg">-</div><div class="label">Average per Client (AED)</div></div>
+  </div>
+  <div class="wins-split">
+    <div class="table-card"><div class="table-scroll"><div id="w-by-rep" class="loading">Loading…</div></div></div>
+    <div class="table-card"><div class="table-scroll"><div id="w-by-ad" class="loading">Loading…</div></div></div>
+  </div>
+  <div class="table-section">
+    <div class="table-section-title"><h2>Every deal won</h2><span class="count-pill" id="w-pill">-</span></div>
+    <div class="table-card"><div class="table-scroll"><div id="w-table" class="loading">Loading…</div></div></div>
+  </div>
+  <div class="meta-note">Won amounts, salespeople and client counts come from the deals marketing types in (month, salesperson, amount). One client with several offices counts once. Months nobody typed show the Odoo leads marked Won (amount "-").</div>
+</div>
+
+<div class="wrap tab-panel" id="tab-meta" role="tabpanel" hidden>
+  <div class="filters">
+    <div class="field">
+      <label for="m-period">Period</label>
+      <select id="m-period"></select>
+    </div>
+    <div class="field" id="m-dates" hidden>
+      <label>Days</label>
+      <div class="date-range">
+        <input type="date" id="m-from" title="From"><span>to</span><input type="date" id="m-to" title="To">
+      </div>
+    </div>
+    <div class="field">
+      <label for="m-campaign">Campaign</label>
+      <select id="m-campaign"><option value="All">All campaigns</option><option value="Office ads">Office ads</option><option value="Events">Events</option></select>
+    </div>
+  </div>
+  <div class="stats eight">
+    <div class="stat spend"><div class="num" id="m-spend">-</div><div class="label">Ad Spend (AED)</div></div>
+    <div class="stat conv"><div class="num" id="m-conv">-</div><div class="label">Conversations Started</div></div>
+    <div class="stat reach"><div class="num" id="m-reach">-</div><div class="label">Total Reach</div><div class="hint">unique people</div></div>
+    <div class="stat"><div class="num" id="m-cpc">-</div><div class="label">Cost per Conversation (AED)</div></div>
+    <div class="stat"><div class="num" id="m-cpm">-</div><div class="label">CPM (AED)</div><div class="hint">cost per 1,000 views</div></div>
+    <div class="stat"><div class="num" id="m-freq">-</div><div class="label">Frequency</div><div class="hint">times each person saw it</div></div>
+    <div class="stat reach"><div class="num" id="m-aud">-</div><div class="label">Audience Size (estimated)</div><div class="hint">people matching our targeting</div></div>
+    <div class="stat reach"><div class="num" id="m-share">-</div><div class="label">Share of Audience Reached</div><div class="hint">reach ÷ audience size</div></div>
+  </div>
+  <div class="meta-note" id="m-note">Loading Meta results…</div>
+  <div class="wide-card">
+    <div class="card-title-row"><h2>Spend and conversations by day</h2></div>
+    <div class="chart-wrap"><canvas id="chart-meta-daily"></canvas></div>
+  </div>
+  <div class="table-section">
+    <div class="table-section-title"><h2>By ad</h2><span class="count-pill" id="m-ad-pill">-</span></div>
+    <div class="q-avg" id="m-qavg"></div>
+    <div class="table-card"><div class="table-scroll"><div id="m-ads" class="loading">Loading…</div></div></div>
+  </div>
+  <div class="table-section">
+    <div class="table-section-title"><h2>Day by day</h2></div>
+    <div class="table-card"><div class="table-scroll"><div id="m-table" class="loading">Loading…</div></div></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const CSV_URL = "crm-snapshot.csv";
+const ODOO_RECORD_URL = "https:\/\/3smiddleeast1.odoo.com\/odoo\/crm\/";
+const RESPOND_IO_SPACE_ID = '372903';
+
+// Builds a respond.io conversation deep link for a lead, once the sheet
+// carries a "Respond Contact ID" column (populated by the Odoo sync once it
+// can resolve phone -> respond.io contact id). Until then this returns null
+// and callers fall back to the Odoo record link.
+function respondIoUrlFor(l) {
+  if (!l.respondContactId) return null;
+  return `https://app.respond.io/space/${RESPOND_IO_SPACE_ID}/inbox/${encodeURIComponent(l.respondContactId)}`;
+}
+
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], next = text[i+1];
+    if (inQuotes) {
+      if (c === '"' && next === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { field += c; }
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (field.length || row.length) { row.push(field); rows.push(row); row = []; field = ''; }
+        if (c === '\r' && next === '\n') i++;
+      } else field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.length > 1 || r[0] !== '');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function populateSelect(id, values) {
+  const sel = document.getElementById(id);
+  const current = sel.value;
+  // Clear everything except the first ("All ...") option, then rebuild,
+  // so refreshing data doesn't pile up duplicate options every time.
+  while (sel.options.length > 1) sel.remove(1);
+  [...new Set(values)].filter(Boolean).sort().forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v; opt.textContent = v;
+    sel.appendChild(opt);
+  });
+  // Keep whatever the user had selected, if it still exists in the new data.
+  if ([...sel.options].some(o => o.value === current)) sel.value = current;
+}
+
+function withinRange(dateStr, fromStr, toStr) {
+  if (!fromStr && !toStr) return true;
+  const d = new Date(dateStr.replace(' ', 'T') + 'Z');
+  if (fromStr) {
+    const from = new Date(fromStr + 'T00:00:00Z');
+    if (d < from) return false;
+  }
+  if (toStr) {
+    const to = new Date(toStr + 'T23:59:59Z');
+    if (d > to) return false;
+  }
+  return true;
+}
+
+const charts = {};
+const PALETTE = ['#2569d6', '#16925a', '#b8860b', '#7c4fd6', '#d1393f', '#0f9ca6', '#c2609c', '#5a6b8c'];
+
+function renderChart(canvasId, counts, baseColor) {
+  const wrap = document.getElementById(canvasId).parentElement;
+  const entries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+  if (!entries.length) {
+    if (charts[canvasId]) { charts[canvasId].destroy(); delete charts[canvasId]; }
+    wrap.innerHTML = '<div class="chart-empty">No data for this selection</div>';
+    return;
+  }
+  if (!document.getElementById(canvasId)) {
+    wrap.innerHTML = `<canvas id="${canvasId}"></canvas>`;
+  }
+
+  const labels = entries.map(e => e[0]);
+  const data = entries.map(e => e[1]);
+  const colors = labels.map((_, i) => baseColor === 'palette' ? PALETTE[i % PALETTE.length] : baseColor);
+
+  if (charts[canvasId]) {
+    charts[canvasId].data.labels = labels;
+    charts[canvasId].data.datasets[0].data = data;
+    charts[canvasId].data.datasets[0].backgroundColor = colors;
+    charts[canvasId].update();
+    return;
+  }
+
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  charts[canvasId] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Leads',
+        data: data,
+        backgroundColor: colors,
+        borderRadius: 6,
+        maxBarThickness: 28
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#142c4a',
+          padding: 10,
+          cornerRadius: 8,
+          titleFont: { family: 'Inter', weight: '600' },
+          bodyFont: { family: 'Inter' }
+        }
+      },
+      scales: {
+        x: { beginAtZero: true, ticks: { precision: 0, font: { family: 'Inter' } }, grid: { color: '#eef0f4' } },
+        y: { ticks: { autoSkip: false, font: { family: 'Inter', size: 12 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+let LEADS = [];
+const PAGE_SIZE = 25;
+
+// Two independent table states: one for Active (Open+Won) leads, one for Lost.
+const tableState = {
+  active: { page: 1, rows: [] },
+  lost:   { page: 1, rows: [] }
+};
+
+function renderLeadTable(key, rows, includeLostReason) {
+  const state = tableState[key];
+  const area = document.getElementById(`table-area-${key}`);
+  const pagination = document.getElementById(`pagination-${key}`);
+  const countPill = document.getElementById(`${key}-count-pill`);
+
+  state.rows = rows;
+  countPill.textContent = `${rows.length} lead${rows.length === 1 ? '' : 's'}`;
+  area.classList.remove('loading');
+
+  if (!rows.length) {
+    area.innerHTML = `<div class="empty">No ${key === 'lost' ? 'lost' : 'active'} leads match these filters.</div>`;
+    pagination.style.display = 'none';
+    return;
+  }
+
+  const pageCount = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+  if (state.page > pageCount) state.page = pageCount;
+  const start = (state.page - 1) * PAGE_SIZE;
+  const pageRows = rows.slice(start, start + PAGE_SIZE);
+
+  let headCells = '<th>Lead</th><th>Phone</th><th>Stage</th><th>Salesperson</th><th>Created</th><th>Company</th><th>Referred By</th><th>Ad Source URL</th>';
+  if (includeLostReason) headCells += '<th>Lost Reason</th>';
+  headCells += '<th>Status</th>';
+
+  let html = `<table><thead><tr>${headCells}</tr></thead><tbody>`;
+  pageRows.forEach(l => {
+    // Links out to the lead's respond.io conversation once a link can be
+    // resolved for it (no more Odoo fallback - plain text until then).
+    const viewUrl = respondIoUrlFor(l);
+    const nameCell = viewUrl
+      ? `<a href="${viewUrl}" target="_blank" rel="noopener">${escapeHtml(l.name)}</a>`
+      : escapeHtml(l.name);
+    const adCell = l.adSourceUrl
+      ? `<a href="${escapeHtml(l.adSourceUrl)}" target="_blank" rel="noopener" class="ad-source-link">${escapeHtml(l.adSourceUrl)}</a>`
+      : '-';
+    let rowCells = `<td class="name-cell">${nameCell}</td><td>${escapeHtml(l.phone || '-')}</td><td>${escapeHtml(l.stage)}</td><td>${escapeHtml(l.sales)}</td><td>${escapeHtml(l.date)}</td><td>${escapeHtml(l.company)}</td><td>${escapeHtml(l.referred)}</td><td>${adCell}</td>`;
+    if (includeLostReason) rowCells += `<td>${escapeHtml(l.lostReason || '-')}</td>`;
+    rowCells += `<td><span class="badge ${l.status}">${escapeHtml(l.status)}</span></td>`;
+    html += `<tr>${rowCells}</tr>`;
+  });
+  html += '</tbody></table>';
+  area.innerHTML = html;
+
+  pagination.style.display = 'flex';
+  document.getElementById(`page-info-${key}`).textContent =
+    `Page ${state.page} of ${pageCount} (${rows.length} leads)`;
+  document.getElementById(`page-prev-${key}`).disabled = state.page <= 1;
+  document.getElementById(`page-next-${key}`).disabled = state.page >= pageCount;
+}
+
+function render(resetPage) {
+  if (resetPage) { tableState.active.page = 1; tableState.lost.page = 1; }
+  const from = document.getElementById('f-from').value;
+  const to = document.getElementById('f-to').value;
+  const stage = document.getElementById('f-stage').value;
+  const sales = document.getElementById('f-sales').value;
+  const referred = document.getElementById('f-referred').value;
+  const company = document.getElementById('f-company').value;
+
+  const filtered = LEADS.filter(l =>
+    withinRange(l.date, from, to) &&
+    (!stage || l.stage === stage) &&
+    (!sales || l.sales === sales) &&
+    (!referred || l.referred === referred) &&
+    (!company || l.company === company)
+  );
+
+  const total = filtered.length;
+  const won = filtered.filter(l => l.status === 'Won').length;
+  const lost = filtered.filter(l => l.status === 'Lost').length;
+  const open = total - won - lost;
+
+  document.getElementById('s-total').textContent = total;
+  document.getElementById('s-open').textContent = open;
+  document.getElementById('s-won').textContent = won;
+  document.getElementById('s-lost').textContent = lost;
+
+  const stageCounts = {};
+  const salesCounts = {};
+  const lostReasonCounts = {};
+  filtered.forEach(l => {
+    // Stage and Salesperson charts are the active pipeline view - Lost
+    // leads are tracked separately below in Lost Reasons (and in the
+    // Lost Leads table), so they're excluded here rather than counted
+    // in both places.
+    if (l.status === 'Lost') {
+      const lr = l.lostReason || '(No reason given)';
+      lostReasonCounts[lr] = (lostReasonCounts[lr] || 0) + 1;
+      return;
+    }
+    const st = l.stage || '(No stage)';
+    const sp = l.sales || '(Unassigned)';
+    stageCounts[st] = (stageCounts[st] || 0) + 1;
+    salesCounts[sp] = (salesCounts[sp] || 0) + 1;
+  });
+  renderChart('chart-stage', stageCounts, '#142c4a');
+  Object.keys(salesCounts).forEach(k => { if (!isSales(k)) delete salesCounts[k]; });
+  renderChart('chart-sales', salesCounts, 'palette');
+  renderChart('chart-lost', lostReasonCounts, '#d1393f');
+
+  const sorted = filtered.slice().sort((a, b) => (a.date < b.date ? 1 : -1));
+  const activeRows = sorted.filter(l => l.status !== 'Lost');
+  const lostRows = sorted.filter(l => l.status === 'Lost');
+
+  renderLeadTable('active', activeRows, false);
+  renderLeadTable('lost', lostRows, true);
+}
+
+let listenersBound = false;
+
+function bindListenersOnce() {
+  if (listenersBound) return;
+  listenersBound = true;
+
+  ['f-from','f-to','f-stage','f-sales','f-referred','f-company'].forEach(id =>
+    document.getElementById(id).addEventListener('change', () => render(true))
+  );
+
+  document.getElementById('f-quick').addEventListener('change', e => {
+    const v = e.target.value, d = n => new Date(Date.now() + 4 * 3600 * 1000 + n * 86400000).toISOString().slice(0, 10), t = d(0);
+    const lm = new Date(Date.UTC(+t.slice(0, 4), +t.slice(5, 7) - 2, 1)), lmEnd = new Date(Date.UTC(+t.slice(0, 4), +t.slice(5, 7) - 1, 0));
+    const r = {month: [t.slice(0, 8) + '01', t], today: [t, t], yesterday: [d(-1), d(-1)], last7: [d(-6), t],
+               lastmonth: [lm.toISOString().slice(0, 10), lmEnd.toISOString().slice(0, 10)], all: ['', '']}[v];
+    if (!r) return;
+    document.getElementById('f-from').value = r[0]; document.getElementById('f-to').value = r[1]; render(true);
+  });
+  ['f-from', 'f-to'].forEach(id => document.getElementById(id).addEventListener('change', () => { document.getElementById('f-quick').value = 'custom'; }));
+  document.getElementById('f-clear').addEventListener('click', () => {
+    document.getElementById('f-quick').value = 'all';
+    ['f-from','f-to','f-stage','f-sales','f-referred','f-company'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    render(true);
+  });
+
+  ['active', 'lost'].forEach(key => {
+    document.getElementById(`page-prev-${key}`).addEventListener('click', () => {
+      if (tableState[key].page > 1) {
+        tableState[key].page--;
+        renderLeadTable(key, tableState[key].rows, key === 'lost');
+      }
+    });
+    document.getElementById(`page-next-${key}`).addEventListener('click', () => {
+      const pageCount = Math.max(1, Math.ceil(tableState[key].rows.length / PAGE_SIZE));
+      if (tableState[key].page < pageCount) {
+        tableState[key].page++;
+        renderLeadTable(key, tableState[key].rows, key === 'lost');
+      }
+    });
+  });
+}
+
+// isInitial=true resets filters/pages (first page load). On the periodic
+// background refresh we pass false so whatever the person is looking at -
+// filters, selected page - stays put while the numbers quietly update.
+async function load(isInitial) {
+  try {
+    const res = await fetch(CSV_URL + (CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
+    const text = await res.text();
+    const rows = parseCSV(text);
+    const header = rows[0];
+    const idx = name => header.indexOf(name);
+    LEADS = rows.slice(1).map(r => ({
+      id: r[idx('ID')] || '',
+      name: r[idx('Lead Name')] || '',
+      stage: r[idx('Stage')] || '',
+      sales: r[idx('Salesperson')] || '',
+      date: (d => d ? new Date(Date.parse(d.replace(' ', 'T') + 'Z') + 4 * 3600 * 1000).toISOString().slice(0, 19).replace('T', ' ') : '')(r[idx('Created Date')] || ''),
+      company: r[idx('Company')] || '',
+      referred: r[idx('Referred By')] || '',
+      status: r[idx('Status')] || '',
+      lostReason: r[idx('Lost Reason')] || '',
+      phone: r[idx('Phone')] || '',
+      adSourceUrl: r[idx('Ad Source URL')] || '',
+      respondContactId: r[idx('Respond Contact ID')] || ''
+    }));
+
+    populateSelect('f-stage', LEADS.map(l => l.stage));
+    populateSelect('f-sales', LEADS.map(l => l.sales).filter(isSales));
+    populateSelect('f-referred', LEADS.map(l => l.referred));
+    populateSelect('f-company', LEADS.map(l => l.company));
+
+    if (isInitial && !document.getElementById('f-from').value && !document.getElementById('f-to').value) {
+      const dubaiToday = new Date(Date.now() + 4 * 3600 * 1000).toISOString().slice(0, 10);
+      document.getElementById('f-from').value = dubaiToday.slice(0, 8) + '01';
+      document.getElementById('f-to').value = dubaiToday;
+      const fc = document.getElementById('f-company'), bc = [...fc.options].find(o => /biz city/i.test(o.value));
+      if (bc) fc.value = bc.value;
+    }
+    bindListenersOnce();
+    render(!!isInitial);
+    if (typeof renderOverview === 'function' && META.length && !document.getElementById('tab-overview').hidden) renderOverview();
+    if (typeof renderWins === 'function' && !document.getElementById('tab-wins').hidden) renderWins();
+  } catch (e) {
+    // Only blank out the tables on the very first load failing - a background
+    // refresh failing (e.g. a brief network hiccup) should leave whatever
+    // is already on screen alone rather than wiping it out.
+    if (isInitial) {
+      const msg = '<div class="empty">Could not load data. Check the published Sheet URL.</div>';
+      const areaActive = document.getElementById('table-area-active');
+      const areaLost = document.getElementById('table-area-lost');
+      areaActive.classList.remove('loading');
+      areaLost.classList.remove('loading');
+      areaActive.innerHTML = msg;
+      areaLost.innerHTML = msg;
+    }
+  }
+}
+
+load(true);
+
+// Keep the dashboard current on its own - re-pull the sheet every minute,
+// matching how often the Odoo sync itself runs, so nobody ever has to
+// manually refresh the page to see new/changed leads.
+setInterval(() => load(false), 60 * 1000);
+</script>
+
+<script>
+// ---- Meta Ads tab (added 15 Oct 2026). Data: published "Meta Ads Feed" sheet, refreshed from the Meta API. ----
+// Value labels on every chart: numbers inside the bars (outside when a bar is too small), and above line points.
+Chart.register({
+  id: 'valueLabels',
+  afterDatasetsDraw(chart) {
+    const ctx = chart.ctx, horizontal = chart.options.indexAxis === 'y';
+    ctx.save();
+    ctx.font = "700 11px Inter, Arial, sans-serif";
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (meta.hidden) return;
+      const isLine = meta.type === 'line';
+      meta.data.forEach((el, i) => {
+        const v = ds.data[i];
+        if (v === null || v === undefined || v === 0) return;
+        const text = Number.isInteger(v) ? v.toLocaleString('en-US') : Math.round(v).toLocaleString('en-US');
+        const w = ctx.measureText(text).width;
+        if (isLine) {
+          const bx = el.x - w / 2 - 4, by = el.y - 22;
+          ctx.fillStyle = '#fff'; ctx.strokeStyle = ds.borderColor || '#16925a'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.roundRect ? ctx.roundRect(bx, by, w + 8, 16, 4) : ctx.rect(bx, by, w + 8, 16); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = ds.borderColor || '#16925a'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(text, el.x, by + 8);
+        } else if (horizontal) {
+          const len = Math.abs(el.x - el.base);
+          ctx.textBaseline = 'middle';
+          if (len > w + 12) { ctx.fillStyle = '#fff'; ctx.textAlign = 'right'; ctx.fillText(text, el.x - 6, el.y); }
+          else { ctx.fillStyle = '#1a2230'; ctx.textAlign = 'left'; ctx.fillText(text, el.x + 5, el.y); }
+        } else {
+          const len = Math.abs(el.base - el.y), barW = el.width || 0;
+          ctx.textAlign = 'center';
+          if (len > 20 && barW > w + 4) { ctx.fillStyle = '#fff'; ctx.textBaseline = 'top'; ctx.fillText(text, el.x, el.y + 5); }
+          else { ctx.fillStyle = '#1a2230'; ctx.textBaseline = 'bottom'; ctx.fillText(text, el.x, el.y - 3); }
+        }
+      });
+    });
+    ctx.restore();
+  }
+});
+// owner: Jonas Vas and Varun Jaitly are not sales; leave them out of salesperson views (their leads still count in totals)
+const NOT_SALES = ['jonas vas', 'varun jaitly'];
+const isSales = name => !NOT_SALES.includes(String(name || '').trim().toLowerCase());
+const META_CSV_URL = "meta-feed-test.csv";
+let META = [];
+let WON = {};
+let WINS = [];
+// Meta's estimated audience size of the live office-ads ad set(s): {low, high}
+function audience() {
+  const a = META.filter(m => m.type === 'audience');
+  return a.length ? {low: a.reduce((t, m) => t + m.reach, 0), high: a.reduce((t, m) => t + m.impressions, 0)} : null;
+}
+// frequency = times shown / people reached; colour: up to 3 good, 3-4 watch, over 4 act
+function setFreq(prefix, impressions, reach) {
+  const el = document.getElementById(prefix + '-freq'), f = reach ? impressions / reach : 0;
+  el.textContent = f ? f.toFixed(2) : '-';
+  el.style.color = !f ? '' : f <= 3 ? 'var(--green)' : f <= 4 ? 'var(--amber)' : 'var(--red)';
+}
+function setAudience(prefix, reach) {
+  const a = audience(), k = n => n >= 1000 ? Math.round(n / 1000) + 'k' : String(n);
+  document.getElementById(prefix + '-aud').textContent = a ? k(a.low) + ' - ' + k(a.high) : '-';
+  document.getElementById(prefix + '-share').textContent = (a && reach) ? Math.round(reach / ((a.low + a.high) / 2) * 100) + '%' : '-';
+}
+const fmtAED = n => n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const fmtInt = n => n.toLocaleString('en-US');
+
+function showTab(which) {
+  ['overview', 'crm', 'meta', 'wins'].forEach(t => {
+    document.getElementById('tab-' + t).hidden = (t !== which);
+    document.getElementById('tabbtn-' + t).setAttribute('aria-selected', t === which ? 'true' : 'false');
+  });
+  if ((which === 'meta' || which === 'overview' || which === 'wins') && !META.length) loadMeta();
+  if (which === 'wins') renderWins();
+  if (which === 'overview' && META.length) renderOverview();
+  if (which === 'meta') setTimeout(() => { if (charts['chart-meta-daily']) charts['chart-meta-daily'].resize(); }, 0);
+}
+document.getElementById('tabbtn-crm').addEventListener('click', () => { showTab('crm'); history.replaceState(null, '', location.pathname + location.search); });
+document.getElementById('tabbtn-meta').addEventListener('click', () => { showTab('meta'); history.replaceState(null, '', '#meta'); });
+document.getElementById('tabbtn-overview').addEventListener('click', () => { showTab('overview'); history.replaceState(null, '', '#overview'); });
+if (location.hash === '#meta') showTab('meta');
+if (location.hash === '#overview') showTab('overview');
+document.getElementById('tabbtn-wins').addEventListener('click', () => { showTab('wins'); history.replaceState(null, '', '#wins'); });
+if (location.hash === '#wins') showTab('wins');
+
+async function loadMeta() {
+  try {
+    const res = await fetch(META_CSV_URL + (META_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now());
+    const rows = parseCSV(await res.text());
+    const h = rows[0], ix = n => h.indexOf(n);
+    META = rows.slice(1).filter(r => r[ix('Type')]).map(r => ({
+      type: r[ix('Type')], period: r[ix('Period')], from: r[ix('From')], to: r[ix('To')], campaign: r[ix('Campaign')],
+      spend: parseFloat(r[ix('Spend')]) || 0, conv: parseInt(r[ix('Conversations')], 10) || 0,
+      reach: parseInt(r[ix('Reach')], 10) || 0, impressions: parseInt(r[ix('Impressions')], 10) || 0, updated: r[ix('Updated')],
+      status: ix('Status') >= 0 ? (r[ix('Status')] || '') : '',
+      quality: ix('Quality') >= 0 ? (r[ix('Quality')] || '') : '', engagement: ix('Engagement') >= 0 ? (r[ix('Engagement')] || '') : '',
+      conversion: ix('Conversion') >= 0 ? (r[ix('Conversion')] || '') : ''
+    }));
+    // Manual inputs typed by the marketing team in columns P onward: Month | Won amount (AED) | Won deals | Note
+    WON = {};
+    const iM = ix('Month'), iA = ix('Won amount (AED)'), iD = ix('Won deals'), iN = ix('Note');
+    if (iM >= 0) rows.slice(1).forEach(r => {
+      const m = (r[iM] || '').trim();
+      if (/^\d{4}-\d{2}$/.test(m)) WON[m] = {amount: parseFloat(String(r[iA] || '').replace(/[^0-9.]/g, '')) || 0,
+        deals: iD >= 0 ? (parseInt(r[iD], 10) || null) : null, note: iN >= 0 ? (r[iN] || '') : ''};
+    });
+    // Deals typed in by the marketing team in columns U onward: Win date | Client | Ad | Handled by | Amount (AED) | Deal note
+    const iWd = ix('Win date'), iWc = ix('Client'), iWa = ix('Ad'), iWh = ix('Handled by'), iWm = ix('Amount (AED)'), iWn = ix('Deal note');
+    WINS = iWd < 0 ? [] : rows.slice(1).filter(r => /^\d{4}-\d{2}-\d{2}$/.test((r[iWd] || '').trim())).map(r => ({
+      date: r[iWd].trim(), client: r[iWc] || '', ad: (r[iWa] || '').trim() || 'Not recorded', rep: (r[iWh] || '').trim() || 'Not recorded',
+      amount: parseFloat(String(r[iWm] || '').replace(/[^0-9.]/g, '')) || 0, note: iWn >= 0 ? (r[iWn] || '') : ''}));
+    // a month with deals but no typed month total uses the sum of its deals
+    WINS.forEach(w => { const m = w.date.slice(0, 7); if (!WON[m]) WON[m] = {amount: 0, deals: 0, note: '', fromDeals: true};
+                        if (WON[m].fromDeals) { WON[m].amount += w.amount; WON[m].deals += 1; } });
+    const osel = document.getElementById('o-month'), ocur = osel.value;
+    osel.innerHTML = '';
+    META.filter(m => m.type === 'period' && m.campaign === 'All' && /^(This|Last) month$/.test(m.period)).forEach(m => {
+      const o = document.createElement('option'); o.value = m.from.slice(0, 7);
+      o.textContent = new Date(m.from + 'T00:00:00Z').toLocaleDateString('en-GB', {month: 'long', year: 'numeric', timeZone: 'UTC'}) + (m.period === 'This month' ? ' (to date)' : '');
+      osel.appendChild(o);
+    });
+    [['today', 'Today'], ['yesterday', 'Yesterday'], ['last7', 'Last 7 days'], ['custom', 'Custom dates']].forEach(([v, t]) => {
+      const o = document.createElement('option'); o.value = v; o.textContent = t; osel.appendChild(o); });
+    if ([...osel.options].some(o => o.value === ocur)) osel.value = ocur;
+    const sel = document.getElementById('m-period'), cur = sel.value;
+    sel.innerHTML = '';
+    [...new Set(META.filter(m => m.type === 'period').map(m => m.period))].forEach(p => {
+      const o = document.createElement('option'); o.value = p; o.textContent = p; sel.appendChild(o);
+    });
+    ['Today', 'Yesterday', 'Custom dates'].forEach(v => { const o = document.createElement('option'); o.value = v; o.textContent = v; sel.appendChild(o); });
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+    else if ([...sel.options].some(o => o.value === 'This month')) sel.value = 'This month';
+    renderMeta();
+    if (!document.getElementById('tab-overview').hidden) renderOverview();
+    if (!document.getElementById('tab-wins').hidden) renderWins();
+  } catch (e) {
+    document.getElementById('m-note').textContent = 'Could not load Meta results. Check the published Meta Ads Feed URL.';
+    const t = document.getElementById('m-table'); t.classList.remove('loading'); t.innerHTML = '<div class="empty">No data.</div>';
+  }
+}
+
+// Meta ad quality rankings (compared with ads competing for the same audience)
+const RANK = {ABOVE_AVERAGE: [3, 'Above avg', 'q3'], AVERAGE: [2, 'Average', 'q2'], BELOW_AVERAGE_35: [1.5, 'Below avg (bottom 35%)', 'q1'],
+              BELOW_AVERAGE_20: [1, 'Below avg (bottom 20%)', 'q0'], BELOW_AVERAGE_10: [0.5, 'Below avg (bottom 10%)', 'q0']};
+const qBadge = (prefix, v) => { const r = RANK[v]; return `<span class="qb ${r ? r[2] : 'qn'}" title="Meta quality ranking">${r ? r[1] : 'Not enough data'}</span>`; };
+function qAverage(ads, key) {   // spend-weighted, only ads Meta has ranked
+  let w = 0, t = 0;
+  ads.forEach(a => { const r = RANK[a[key]]; if (r) { w += a.spend; t += r[0] * a.spend; } });
+  if (!w) return null;
+  const v = t / w; return v >= 2.5 ? ['Above average', 'q3'] : v >= 1.75 ? ['Average', 'q2'] : v >= 1.25 ? ['Below average', 'q1'] : ['Well below average', 'q0'];
+}
+let DAY_SORT = {key: 'from', dir: -1};
+let AD_SORT = {key: '', dir: -1};   // '' = default: active ads first, then by spend
+function renderMeta() {
+  const period = document.getElementById('m-period').value, camp = document.getElementById('m-campaign').value;
+  const isEvent = n => /beautyworld|event|airport/i.test(n);
+  const allDays = META.filter(m => m.type === 'day' && m.campaign === camp).sort((x, y) => x.from < y.from ? -1 : 1);
+  const uaeToday = new Date(Date.now() + 4 * 3600 * 1000).toISOString().slice(0, 10);   // days are UAE days, like Odoo
+  const lastDay = allDays.length ? allDays[allDays.length - 1].from : '';
+  const prevDay = d => new Date(Date.parse(d + 'T00:00:00Z') - 86400000).toISOString().slice(0, 10);
+  document.getElementById('m-dates').hidden = period !== 'Custom dates';
+  let p = null, from = '', to = '';
+  if (period === 'Today') { from = to = uaeToday; }
+  else if (period === 'Yesterday') { from = to = prevDay(uaeToday); }
+  else if (period === 'Custom dates') {
+    const f = document.getElementById('m-from'), t = document.getElementById('m-to');
+    if (!f.value && lastDay) { f.value = lastDay.slice(0, 8) + '01'; t.value = lastDay; }
+    from = f.value; to = t.value || f.value;
+    if (from > to) { const x = from; from = to; to = x; }
+  } else {
+    p = META.find(m => m.type === 'period' && m.period === period && m.campaign === camp);
+    if (p) { from = p.from; to = p.to; }
+  }
+  const days = allDays.filter(d => from && d.from >= from && d.from <= to);
+  const sum = (arr, k) => arr.reduce((t, x) => t + x[k], 0);
+  // preset periods carry Meta's unique reach; day rows carry Meta's reach for its own day (11:00-11:00 UAE), so day reach is ≈
+  const approx = !p && days.length > 0;
+  const s = p || {spend: sum(days, 'spend'), conv: sum(days, 'conv'), impressions: sum(days, 'impressions'), reach: sum(days, 'reach')};
+  document.getElementById('m-spend').textContent = fmtAED(s.spend);
+  document.getElementById('m-conv').textContent = fmtInt(s.conv);
+  document.getElementById('m-reach').textContent = (approx ? '≈ ' : '') + fmtInt(s.reach);
+  document.getElementById('m-cpc').textContent = s.conv ? fmtAED(s.spend / s.conv) : '-';
+  document.getElementById('m-cpm').textContent = s.impressions ? fmtAED(s.spend / s.impressions * 1000) : '-';
+  setAudience('m', s.reach);
+  setFreq('m', s.impressions || 0, s.reach);
+
+  // by ad: preset periods use Meta's per-period rows; Today / Yesterday / custom total the per-ad daily rows
+  let ads;
+  if (p) ads = META.filter(m => m.type === 'ad' && m.period === period);
+  else {
+    const g = {};
+    META.filter(m => m.type === 'adday' && m.from >= from && m.from <= to).forEach(m => {
+      const x = g[m.campaign] = g[m.campaign] || {campaign: m.campaign, spend: 0, conv: 0, impressions: 0, reach: 0, status: m.status, last: ''};
+      x.spend += m.spend; x.conv += m.conv; x.impressions += m.impressions; x.reach += m.reach;
+      if (m.from >= x.last) { x.last = m.from; x.status = m.status; }
+    });
+    ads = Object.values(g);
+    const ref = {}; META.filter(m => m.type === 'ad' && m.period === 'Last 30 days').forEach(m => ref[m.campaign] = m);
+    ads.forEach(x => { const r = ref[x.campaign] || {}; x.quality = r.quality || ''; x.engagement = r.engagement || ''; x.conversion = r.conversion || ''; });
+  }
+  const aval = (x, k) => k === 'status' ? (x.status === 'Active' ? 1 : 0) : k === 'campaign' ? x.campaign.toLowerCase()
+                      : k === 'cpm' ? (x.impressions ? x.spend / x.impressions : 0) : k === 'cpc' ? (x.conv ? x.spend / x.conv : Infinity)
+                      : k === 'freq' ? (x.reach ? x.impressions / x.reach : 0)
+                      : k === 'quality' ? (RANK[x.quality] || [0])[0] : x[k];
+  ads = ads.filter(m => camp === 'All' || (camp === 'Events') === isEvent(m.campaign))
+           .sort((x, y) => {
+             if (!AD_SORT.key) return ((y.status === 'Active') - (x.status === 'Active')) || y.spend - x.spend;
+             const A = aval(x, AD_SORT.key), B = aval(y, AD_SORT.key); return (A < B ? -1 : A > B ? 1 : 0) * AD_SORT.dir; });
+  const nActive = ads.filter(x => x.status === 'Active').length;
+  document.getElementById('m-ad-pill').textContent = ads.length + ' ad' + (ads.length === 1 ? '' : 's') + (nActive ? ' · ' + nActive + ' active' : '');
+  const at = document.getElementById('m-ads'); at.classList.remove('loading');
+  const acols = [['status', 'Status', ''], ['campaign', 'Ad', ''], ['spend', 'Spend (AED)', 'num'], ['impressions', 'Times shown', 'num'], ['cpm', 'CPM', 'num'],
+                 ['conv', 'Conversations', 'num'], ['cpc', 'Cost per conversation', 'num'], ['reach', 'Reach', 'num'], ['freq', 'Frequency', 'num'], ['quality', 'Ad quality', '']];
+  at.innerHTML = ads.length ? '<table><thead><tr>' + acols.map(([k, label, c]) =>
+      `<th class="sortable ${c}" data-k="${k}" title="Sort">${label}${AD_SORT.key === k ? (AD_SORT.dir < 0 ? ' ▼' : ' ▲') : ''}</th>`).join('') + '</tr></thead><tbody>' +
+    ads.map(x => `<tr class="${x.status === 'Active' ? 'ad-active' : 'ad-off'}"><td><span class="badge ${x.status === 'Active' ? 'Active' : 'Off'}">${x.status === 'Active' ? 'Active' : 'Off'}</span></td><td>${escapeHtml(x.campaign)}</td><td class="num">${fmtAED(x.spend)}</td><td class="num">${fmtInt(x.impressions)}</td><td class="num">${x.impressions ? fmtAED(x.spend / x.impressions * 1000) : '-'}</td><td class="num">${fmtInt(x.conv)}</td><td class="num">${x.conv ? fmtAED(x.spend / x.conv) : '-'}</td><td class="num">${fmtInt(x.reach)}</td><td class="num">${x.reach ? (x.impressions / x.reach).toFixed(2) : '-'}</td><td>${qBadge('Quality', x.quality)}</td></tr>`).join('') +
+    '</tbody></table><div class="q-avg" style="padding:8px 12px;margin:0">Ad quality = Meta quality ranking: how good people find the ad compared with ads competing for the same people. Better quality lowers CPM. Meta needs about 500 views before it ranks an ad.' +
+    (p ? '' : ' For Today, Yesterday and custom dates the rankings shown are from the last 30 days.') + '</div>'
+    : '<div class="empty">No ad results for these days.</div>';
+  const qa = qAverage(ads, 'quality');
+  document.getElementById('m-qavg').innerHTML = qa
+    ? `Average ad quality (by spend, ranked ads only): <span class="qb ${qa[1]}">${qa[0]}</span>`
+    : 'Average ad quality: not enough data yet (Meta ranks an ad after about 500 views).';
+  at.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => {
+    const k = th.dataset.k;
+    AD_SORT = AD_SORT.key === k ? {key: k, dir: -AD_SORT.dir} : {key: k, dir: k === 'campaign' ? 1 : -1};
+    renderMeta();
+  }));
+
+  const upd = (META.find(m => m.updated) || {}).updated || '';
+  document.getElementById('m-note').textContent = from
+    ? `${from}${to !== from ? ' to ' + to : ''}. Days are UAE days (midnight to midnight), the same as the Odoo leads. ` +
+      (approx ? 'Reach for single days and custom ranges is approximate (≈): Meta gives reach only for its own days (11:00 to 11:00 UAE), and people seen on several days count more than once. ' : 'Reach counts each person once for the whole period. ') +
+      `Updated ${upd}.`
+    : 'No Meta results for this selection.';
+
+  const chartDays = days.slice().sort((x, y) => x.from < y.from ? -1 : 1);
+  const ctx = document.getElementById('chart-meta-daily');
+  const data = {labels: chartDays.map(d => d.from.slice(5)), datasets: [
+    {type: 'bar', label: 'Spend (AED)', data: chartDays.map(d => d.spend), backgroundColor: '#2569d6', borderRadius: 4, yAxisID: 'y', order: 2},
+    {type: 'line', label: 'Conversations', data: chartDays.map(d => d.conv), borderColor: '#16925a', backgroundColor: '#16925a', tension: .3, yAxisID: 'y1', order: 1}]};
+  if (charts['chart-meta-daily']) { charts['chart-meta-daily'].data = data; charts['chart-meta-daily'].update(); }
+  else charts['chart-meta-daily'] = new Chart(ctx, {data, options: {responsive: true, maintainAspectRatio: false,
+    plugins: {legend: {labels: {font: {family: 'Inter'}}}},
+    scales: {y: {beginAtZero: true, position: 'left', title: {display: true, text: 'AED'}},
+             y1: {beginAtZero: true, position: 'right', grid: {drawOnChartArea: false}, ticks: {precision: 0}, title: {display: true, text: 'Conversations'}}}}});
+
+  // day-by-day table, sortable by clicking a column heading
+  const t = document.getElementById('m-table'); t.classList.remove('loading');
+  if (!days.length) { t.innerHTML = '<div class="empty">No days in this selection.</div>'; return; }
+  const val = (d, k) => k === 'from' ? d.from : k === 'cpc' ? (d.conv ? d.spend / d.conv : Infinity) : k === 'cpm' ? (d.impressions ? d.spend / d.impressions : 0)
+                      : k === 'freq' ? (d.reach ? d.impressions / d.reach : 0) : d[k];
+  const rowsS = days.slice().sort((x, y) => { const A = val(x, DAY_SORT.key), B = val(y, DAY_SORT.key); return (A < B ? -1 : A > B ? 1 : 0) * DAY_SORT.dir; });
+  const cols = [['from', 'Day', ''], ['spend', 'Spend (AED)', 'num'], ['conv', 'Conversations', 'num'], ['cpc', 'Cost per conversation', 'num'],
+                ['cpm', 'CPM', 'num'], ['reach', 'Reach', 'num'], ['freq', 'Frequency', 'num']];
+  let html = '<table><thead><tr>' + cols.map(([k, label, c]) =>
+    `<th class="sortable ${c}" data-k="${k}" title="Sort">${label}${DAY_SORT.key === k ? (DAY_SORT.dir < 0 ? ' ▼' : ' ▲') : ''}</th>`).join('') + '</tr></thead><tbody>';
+  rowsS.forEach(d => {
+    html += `<tr><td>${escapeHtml(d.from)}</td><td class="num">${fmtAED(d.spend)}</td><td class="num">${fmtInt(d.conv)}</td><td class="num">${d.conv ? fmtAED(d.spend / d.conv) : '-'}</td><td class="num">${d.impressions ? fmtAED(d.spend / d.impressions * 1000) : '-'}</td><td class="num">${fmtInt(d.reach)}</td><td class="num">${d.reach ? (d.impressions / d.reach).toFixed(2) : '-'}</td></tr>`;
+  });
+  t.innerHTML = html + '</tbody></table>';
+  t.querySelectorAll('th.sortable').forEach(th => th.addEventListener('click', () => {
+    const k = th.dataset.k;
+    DAY_SORT = DAY_SORT.key === k ? {key: k, dir: -DAY_SORT.dir} : {key: k, dir: k === 'from' ? -1 : -1};
+    renderMeta();
+  }));
+}
+const dubaiDay = (n = 0) => new Date(Date.now() + 4 * 3600 * 1000 + n * 86400000).toISOString().slice(0, 10);
+function renderOverview() {
+  const v = document.getElementById('o-month').value;
+  document.getElementById('o-dates').hidden = v !== 'custom';
+  let p = null, from = '', to = '', isMonth = /^\d{4}-\d{2}$/.test(v);
+  if (isMonth) {
+    p = META.find(m => m.type === 'period' && m.campaign === 'All' && m.from.slice(0, 7) === v && /month$/.test(m.period));
+    from = v + '-01'; to = p ? p.to : new Date(Date.UTC(+v.slice(0, 4), +v.slice(5, 7), 0)).toISOString().slice(0, 10);
+  } else if (v === 'today') { from = to = dubaiDay(0); }
+  else if (v === 'yesterday') { from = to = dubaiDay(-1); }
+  else if (v === 'last7') { from = dubaiDay(-6); to = dubaiDay(0); p = META.find(m => m.type === 'period' && m.campaign === 'All' && m.period === 'Last 7 days'); }
+  else {
+    const f = document.getElementById('o-from'), t = document.getElementById('o-to');
+    if (!f.value) { f.value = dubaiDay(0).slice(0, 8) + '01'; t.value = dubaiDay(0); }
+    from = f.value; to = t.value || f.value; if (from > to) { const x = from; from = to; to = x; }
+  }
+  // Meta: exact period rows for months / last 7 days; otherwise add up the daily rows (reach then shown as ≈)
+  const days = META.filter(m => m.type === 'day' && m.campaign === 'All' && m.from >= from && m.from <= to);
+  const sum = k => days.reduce((t, d) => t + d[k], 0);
+  const approx = !p && days.length > 0;
+  const s = p || {spend: sum('spend'), conv: sum('conv'), reach: sum('reach'), impressions: sum('impressions')};
+  document.getElementById('o-spend').textContent = fmtAED(s.spend);
+  document.getElementById('o-conv').textContent = fmtInt(s.conv);
+  document.getElementById('o-reach').textContent = (approx ? '≈ ' : '') + fmtInt(s.reach);
+  document.getElementById('o-cpc').textContent = s.conv ? fmtAED(s.spend / s.conv) : '-';
+  // CRM: BizCity leads created in the range (Dubai dates)
+  const leads = LEADS.filter(l => { const d = (l.date || '').slice(0, 10); return d >= from && d <= to && /biz city/i.test(l.company); });
+  const lost = leads.filter(l => l.status === 'Lost').length, wonN = leads.filter(l => l.status === 'Won').length;
+  document.getElementById('o-leads').textContent = fmtInt(leads.length);
+  document.getElementById('o-open').textContent = fmtInt(leads.length - lost - wonN);
+  document.getElementById('o-lost').textContent = fmtInt(lost);
+  document.getElementById('o-wonn').textContent = fmtInt(wonN);
+  document.getElementById('o-cpl').textContent = leads.length ? fmtAED(s.spend / leads.length) : '-';
+  // Won amount: a whole month uses the typed month total; other ranges add up the typed deals by win date
+  let w = null;
+  if (isMonth && WON[v]) w = WON[v];
+  else {
+    const ds = WINS.filter(x => x.date >= from && x.date <= to);
+    if (ds.length) w = {amount: ds.reduce((t, x) => t + x.amount, 0), deals: ds.length, note: ''};
+  }
+  const hint = w ? [w.deals ? w.deals + ' deal' + (w.deals === 1 ? '' : 's') : '', w.note].filter(Boolean).join(' · ')
+                 : (isMonth ? 'not entered yet' : 'no deals entered for these days');
+  document.getElementById('o-won').textContent = w ? fmtInt(Math.round(w.amount)) : '-';
+  document.getElementById('o-won-hint').textContent = hint;
+  document.getElementById('o-roas').textContent = (w && s.spend) ? fmtAED(w.amount / s.spend) : '-';
+  const upd = (META.find(m => m.updated) || {}).updated || '';
+  document.getElementById('o-note').textContent = `${from}${to !== from ? ' to ' + to : ''} (UAE dates, midnight to midnight, for both Meta and Odoo). ` +
+    (approx ? 'Reach adds up daily reach (≈). ' : '') +
+    'CRM leads = BizCity leads in Odoo created in these days, all sources. Won amount = the month total marketing typed, or for shorter periods the deals typed with a win date in these days. "Won per AED 1 of ad spend" = won amount divided by Meta ad spend.' +
+    (upd ? ` Meta updated ${upd}.` : '');
+}
+function renderWins() {
+  // Won deals come from Odoo (status Won): lead, who handled it, company, source. Amounts and the ad come from
+  // the rows typed by marketing (Meta Ads Feed, Q:V), matched on the client name.
+  const norm = x => String(x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const typed = WINS.slice();
+  // owner (17 Oct 2026): the months marketing typed come only from the typed rows (month, salesperson, amount);
+  // Odoo wins fill in only the months nobody typed. Count clients, not rows (one client can take several offices).
+  const typedMonths = new Set(typed.map(w => w.date.slice(0, 7)));
+  const odooWon = LEADS.filter(l => l.status === 'Won' && /biz city/i.test(l.company) && !typedMonths.has((l.date || '').slice(0, 7)))
+    .map(l => ({date: (l.date || '').slice(0, 10), client: l.name, company: l.company, rep: l.sales || 'Not assigned', source: l.referred,
+                ad: l.adSourceUrl || 'Not recorded', amount: null}));
+  const extra = typed.map(w => ({date: w.date, client: w.client, company: 'BizCity', rep: w.rep, source: 'Typed by marketing', ad: w.ad, amount: w.amount}));
+  const all = odooWon.concat(extra);
+  const ckey = w => w.date.slice(0, 7) + '|' + norm(w.rep) + '|' + norm(w.client);
+  // month range (owner, 17 Oct 2026): From and To pickers; blank = no limit on that side; both start on the current month
+  const wsel = document.getElementById('w-month'), tsel = document.getElementById('w-month-to');
+  const months = [...new Set(all.map(w => w.date.slice(0, 7)).filter(Boolean))].sort().reverse();
+  [wsel, tsel].forEach(sel => {
+    const cur = sel.value;
+    while (sel.options.length > 1) sel.remove(1);
+    months.forEach(m => {
+      const o = document.createElement('option'); o.value = m;
+      o.textContent = new Date(m + '-01T00:00:00Z').toLocaleDateString('en-GB', {month: 'long', year: 'numeric', timeZone: 'UTC'});
+      sel.appendChild(o);
+    });
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
+  });
+  if (!wsel.dataset.init && months.length) {
+    wsel.dataset.init = '1';
+    const cm = new Date(Date.now() + 4 * 3600 * 1000).toISOString().slice(0, 7);
+    if (months.includes(cm)) { wsel.value = cm; tsel.value = cm; }
+  }
+  let mFrom = wsel.value, mTo = tsel.value;
+  if (mFrom && mTo && mFrom > mTo) { [mFrom, mTo] = [mTo, mFrom]; wsel.value = mFrom; tsel.value = mTo; }
+  let list = all.filter(w => { const m = w.date.slice(0, 7); return (!mFrom || m >= mFrom) && (!mTo || m <= mTo); })
+    .sort((a, b) => a.date < b.date ? 1 : -1);
+  const known = list.filter(w => w.amount !== null), total = known.reduce((t, w) => t + w.amount, 0);
+  document.getElementById('w-total').textContent = known.length ? fmtInt(Math.round(total)) : '-';
+  const clients = new Set(list.map(ckey)).size;
+  document.getElementById('w-count').textContent = fmtInt(clients);
+  document.getElementById('w-avg').textContent = clients ? fmtInt(Math.round(total / clients)) : '-';
+  document.getElementById('w-pill').textContent = clients + ' client' + (clients === 1 ? '' : 's') + (list.length !== clients ? ', ' + list.length + ' rows' : '');
+  const money = v => v === null ? '-' : fmtInt(Math.round(v));
+  const group = (key, title, el) => {
+    const g = {};
+    list.forEach(w => { const k = w[key]; g[k] = g[k] || {n: 0, c: new Set(), amt: 0, any: false}; g[k].c.add(ckey(w)); g[k].n = g[k].c.size; if (w.amount !== null) { g[k].amt += w.amount; g[k].any = true; } });
+    const area = document.getElementById(el); area.classList.remove('loading');
+    const e = Object.entries(g).sort((a, b) => b[1].n - a[1].n || b[1].amt - a[1].amt);
+    area.innerHTML = e.length ? `<table><thead><tr><th>${title}</th><th class="num">Clients</th><th class="num">Amount (AED)</th></tr></thead><tbody>` +
+      e.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td class="num">${v.n}</td><td class="num">${v.any ? fmtInt(Math.round(v.amt)) : '-'}</td></tr>`).join('') +
+      '</tbody></table>' : '<div class="empty">No won deals for this selection.</div>';
+  };
+  const repList = list; list = list.filter(w => isSales(w.rep));
+  group('rep', 'Handled by', 'w-by-rep');
+  list = repList;
+  group('ad', 'Ad', 'w-by-ad');
+  const t = document.getElementById('w-table'); t.classList.remove('loading');
+  t.innerHTML = list.length ? '<table><thead><tr><th>Created</th><th>Deal</th><th>Handled by</th><th>Company</th><th>Source</th><th>Ad</th><th class="num">Amount (AED)</th></tr></thead><tbody>' +
+    list.map(w => `<tr><td>${escapeHtml(w.date)}</td><td>${escapeHtml(w.client)}</td><td>${escapeHtml(w.rep)}</td><td>${escapeHtml(w.company)}</td><td>${escapeHtml(w.source)}</td><td>${escapeHtml(w.ad)}</td><td class="num">${money(w.amount)}</td></tr>`).join('') +
+    '</tbody></table>' : '<div class="empty">No won deals for this selection.</div>';
+}
+document.getElementById('w-month').addEventListener('change', renderWins);
+document.getElementById('w-month-to').addEventListener('change', renderWins);
+document.getElementById('o-month').addEventListener('change', renderOverview);
+document.getElementById('o-from').addEventListener('change', renderOverview);
+document.getElementById('o-to').addEventListener('change', renderOverview);
+document.getElementById('m-period').addEventListener('change', renderMeta);
+document.getElementById('m-from').addEventListener('change', renderMeta);
+document.getElementById('m-to').addEventListener('change', renderMeta);
+document.getElementById('m-campaign').addEventListener('change', renderMeta);
+setInterval(() => { if (!document.getElementById('tab-meta').hidden) loadMeta(); }, 5 * 60 * 1000);
+</script>
+</body>
+</html>
