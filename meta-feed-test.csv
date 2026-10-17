@@ -1,11 +1,11 @@
 Type,Period,From,To,Campaign,Spend,Conversations,Reach,Impressions,Updated,Status,Quality,Engagement,Conversion,,Month,Won amount (AED),Won deals,Note,,Win date,Client,Ad,Handled by,Amount (AED),Deal note
-period,This month,2026-10-01,2026-10-17,All,3422.78,48,22244,61190,2026-10-17 11:43 Dubai,,,,,,2026-10,200000,,,,2026-10-07,BADAL DOCS,,Lara,200000,PREVIEW: amount assumed
-period,Last month,2026-09-01,2026-09-30,All,11966.77,113,45888,203475,2026-10-17 11:43 Dubai,,,,
-period,Last 7 days,2026-10-11,2026-10-17,All,1208.84,15,9606,22572,2026-10-17 11:43 Dubai,,,,
-period,Last 30 days,2026-09-18,2026-10-17,All,6744.84,88,32507,108305,2026-10-17 11:43 Dubai,,,,
-period,Since 1 Sep 2026,2026-09-01,2026-10-17,All,15389.55,161,54443,264665,2026-10-17 11:43 Dubai,,,,
-day,2026-09-01,2026-09-01,2026-09-01,All,160.29,2,1833,2270,2026-10-17 11:43 Dubai,,,,
-day,2026-09-02,2026-09-02,2026-09-02,All,325.85,4,5335,6457,2026-10-17 11:43 Dubai,,,,
+period,This month,2026-10-01,2026-10-17,All,3422.78,48,22244,61190,2026-10-17 11:43 Dubai,,,,,,2026-08,79000,2,Lara: dedicated desk 10k + office 16 (6 months) 69k,,2026-08-01,Dedicated desk,,Lara,10000,August; exact date not given
+period,Last month,2026-09-01,2026-09-30,All,11966.77,113,45888,203475,2026-10-17 11:43 Dubai,,,,,,2026-09,51000,1,Lara: office 13 (6 months),,2026-08-01,Office 16,,Lara,69000,6 months; exact date not given
+period,Last 7 days,2026-10-11,2026-10-17,All,1208.84,15,9606,22572,2026-10-17 11:43 Dubai,,,,,,2026-10,227500,4,"Lara: office 4 75k, office 5 75k, office 36 50k; Shawn: office 27.5k (6 months, lead from Sep)",,2026-09-01,Office 13,,Lara,51000,6 months; exact date not given
+period,Last 30 days,2026-09-18,2026-10-17,All,6744.84,88,32507,108305,2026-10-17 11:43 Dubai,,,,,,,,,,,2026-10-01,Office 4,,Lara,75000,exact date not given
+period,Since 1 Sep 2026,2026-09-01,2026-10-17,All,15389.55,161,54443,264665,2026-10-17 11:43 Dubai,,,,,,,,,,,2026-10-01,Office 5,,Lara,75000,exact date not given
+day,2026-09-01,2026-09-01,2026-09-01,All,160.29,2,1833,2270,2026-10-17 11:43 Dubai,,,,,,,,,,,2026-10-01,Office 36,,Lara,50000,exact date not given
+day,2026-09-02,2026-09-02,2026-09-02,All,325.85,4,5335,6457,2026-10-17 11:43 Dubai,,,,,,,,,,,2026-10-01,Office (Shawn),,Shawn,27500,"Lead Sep, closed Oct; 6 months; excl. VAT 1,375 and deposit 3,000; exact date not given"
 day,2026-09-03,2026-09-03,2026-09-03,All,382.73,5,6742,9616,2026-10-17 11:43 Dubai,,,,
 day,2026-09-04,2026-09-04,2026-09-04,All,288.9,3,5067,9494,2026-10-17 11:43 Dubai,,,,
 day,2026-09-05,2026-09-05,2026-09-05,All,473.1,2,6671,8925,2026-10-17 11:43 Dubai,,,,
