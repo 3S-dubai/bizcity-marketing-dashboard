@@ -349,8 +349,8 @@
   </div>
   <div class="stats">
     <div class="stat won-amt"><div class="num" id="w-total">-</div><div class="label">Won Amount (AED)</div></div>
-    <div class="stat"><div class="num" id="w-count">-</div><div class="label">Deals Won</div></div>
-    <div class="stat"><div class="num" id="w-avg">-</div><div class="label">Average Deal (AED)</div></div>
+    <div class="stat"><div class="num" id="w-count">-</div><div class="label">Clients Won</div></div>
+    <div class="stat"><div class="num" id="w-avg">-</div><div class="label">Average per Client (AED)</div></div>
   </div>
   <div class="wins-split">
     <div class="table-card"><div class="table-scroll"><div id="w-by-rep" class="loading">Loading…</div></div></div>
@@ -360,7 +360,7 @@
     <div class="table-section-title"><h2>Every deal won</h2><span class="count-pill" id="w-pill">-</span></div>
     <div class="table-card"><div class="table-scroll"><div id="w-table" class="loading">Loading…</div></div></div>
   </div>
-  <div class="meta-note">BizCity won deals and who handled them come from Odoo (status Won; month = lead created date). Amount and Ad come from the deal rows marketing types into the Meta Ads Feed sheet (columns U to Z), matched on the deal name; "-" = not entered yet.</div>
+  <div class="meta-note">Won amounts, salespeople and client counts come from the deals marketing types in (month, salesperson, amount). One client with several offices counts once. Months nobody typed show the Odoo leads marked Won (amount "-").</div>
 </div>
 
 <div class="wrap tab-panel" id="tab-meta" role="tabpanel" hidden>
@@ -1088,14 +1088,15 @@ function renderWins() {
   // the rows typed by marketing (Meta Ads Feed, Q:V), matched on the client name.
   const norm = x => String(x || '').toLowerCase().replace(/[^a-z0-9]/g, '');
   const typed = WINS.slice();
-  const odooWon = LEADS.filter(l => l.status === 'Won' && /biz city/i.test(l.company)).map(l => {
-    const t = typed.find(w => norm(w.client) && (norm(l.name).startsWith(norm(w.client)) || norm(w.client).startsWith(norm(l.name))));
-    if (t) t.matched = true;
-    return {date: (l.date || '').slice(0, 10), client: l.name, company: l.company, rep: l.sales || 'Not assigned', source: l.referred,
-            ad: (t && t.ad !== 'Not recorded' ? t.ad : '') || l.adSourceUrl || 'Not recorded', amount: t ? t.amount : null};
-  });
-  const extra = typed.filter(w => !w.matched).map(w => ({date: w.date, client: w.client, company: '', rep: w.rep, source: 'Typed (not in Odoo)', ad: w.ad, amount: w.amount}));
+  // owner (17 Oct 2026): the months marketing typed come only from the typed rows (month, salesperson, amount);
+  // Odoo wins fill in only the months nobody typed. Count clients, not rows (one client can take several offices).
+  const typedMonths = new Set(typed.map(w => w.date.slice(0, 7)));
+  const odooWon = LEADS.filter(l => l.status === 'Won' && /biz city/i.test(l.company) && !typedMonths.has((l.date || '').slice(0, 7)))
+    .map(l => ({date: (l.date || '').slice(0, 10), client: l.name, company: l.company, rep: l.sales || 'Not assigned', source: l.referred,
+                ad: l.adSourceUrl || 'Not recorded', amount: null}));
+  const extra = typed.map(w => ({date: w.date, client: w.client, company: 'BizCity', rep: w.rep, source: 'Typed by marketing', ad: w.ad, amount: w.amount}));
   const all = odooWon.concat(extra);
+  const ckey = w => w.date.slice(0, 7) + '|' + norm(w.rep) + '|' + norm(w.client);
   const wsel = document.getElementById('w-month'), wcur = wsel.value;
   while (wsel.options.length > 1) wsel.remove(1);
   [...new Set(all.map(w => w.date.slice(0, 7)).filter(Boolean))].sort().reverse().forEach(m => {
@@ -1113,16 +1114,17 @@ function renderWins() {
   let list = all.filter(w => !month || w.date.slice(0, 7) === month).sort((a, b) => a.date < b.date ? 1 : -1);
   const known = list.filter(w => w.amount !== null), total = known.reduce((t, w) => t + w.amount, 0);
   document.getElementById('w-total').textContent = known.length ? fmtInt(Math.round(total)) : '-';
-  document.getElementById('w-count').textContent = fmtInt(list.length);
-  document.getElementById('w-avg').textContent = known.length ? fmtInt(Math.round(total / known.length)) : '-';
-  document.getElementById('w-pill').textContent = list.length + ' deal' + (list.length === 1 ? '' : 's');
+  const clients = new Set(list.map(ckey)).size;
+  document.getElementById('w-count').textContent = fmtInt(clients);
+  document.getElementById('w-avg').textContent = clients ? fmtInt(Math.round(total / clients)) : '-';
+  document.getElementById('w-pill').textContent = clients + ' client' + (clients === 1 ? '' : 's') + (list.length !== clients ? ', ' + list.length + ' rows' : '');
   const money = v => v === null ? '-' : fmtInt(Math.round(v));
   const group = (key, title, el) => {
     const g = {};
-    list.forEach(w => { const k = w[key]; g[k] = g[k] || {n: 0, amt: 0, any: false}; g[k].n++; if (w.amount !== null) { g[k].amt += w.amount; g[k].any = true; } });
+    list.forEach(w => { const k = w[key]; g[k] = g[k] || {n: 0, c: new Set(), amt: 0, any: false}; g[k].c.add(ckey(w)); g[k].n = g[k].c.size; if (w.amount !== null) { g[k].amt += w.amount; g[k].any = true; } });
     const area = document.getElementById(el); area.classList.remove('loading');
     const e = Object.entries(g).sort((a, b) => b[1].n - a[1].n || b[1].amt - a[1].amt);
-    area.innerHTML = e.length ? `<table><thead><tr><th>${title}</th><th class="num">Deals</th><th class="num">Amount (AED)</th></tr></thead><tbody>` +
+    area.innerHTML = e.length ? `<table><thead><tr><th>${title}</th><th class="num">Clients</th><th class="num">Amount (AED)</th></tr></thead><tbody>` +
       e.map(([k, v]) => `<tr><td>${escapeHtml(k)}</td><td class="num">${v.n}</td><td class="num">${v.any ? fmtInt(Math.round(v.amt)) : '-'}</td></tr>`).join('') +
       '</tbody></table>' : '<div class="empty">No won deals for this selection.</div>';
   };
