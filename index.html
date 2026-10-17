@@ -343,8 +343,12 @@
 <div class="wrap tab-panel" id="tab-wins" role="tabpanel" hidden>
   <div class="filters">
     <div class="field">
-      <label for="w-month">Month</label>
-      <select id="w-month"><option value="">All months</option></select>
+      <label for="w-month">From month</label>
+      <select id="w-month"><option value="">Earliest</option></select>
+    </div>
+    <div class="field">
+      <label for="w-month-to">To month</label>
+      <select id="w-month-to"><option value="">Latest</option></select>
     </div>
   </div>
   <div class="stats">
@@ -1097,21 +1101,28 @@ function renderWins() {
   const extra = typed.map(w => ({date: w.date, client: w.client, company: 'BizCity', rep: w.rep, source: 'Typed by marketing', ad: w.ad, amount: w.amount}));
   const all = odooWon.concat(extra);
   const ckey = w => w.date.slice(0, 7) + '|' + norm(w.rep) + '|' + norm(w.client);
-  const wsel = document.getElementById('w-month'), wcur = wsel.value;
-  while (wsel.options.length > 1) wsel.remove(1);
-  [...new Set(all.map(w => w.date.slice(0, 7)).filter(Boolean))].sort().reverse().forEach(m => {
-    const o = document.createElement('option'); o.value = m;
-    o.textContent = new Date(m + '-01T00:00:00Z').toLocaleDateString('en-GB', {month: 'long', year: 'numeric', timeZone: 'UTC'});
-    wsel.appendChild(o);
+  // month range (owner, 17 Oct 2026): From and To pickers; blank = no limit on that side; both start on the current month
+  const wsel = document.getElementById('w-month'), tsel = document.getElementById('w-month-to');
+  const months = [...new Set(all.map(w => w.date.slice(0, 7)).filter(Boolean))].sort().reverse();
+  [wsel, tsel].forEach(sel => {
+    const cur = sel.value;
+    while (sel.options.length > 1) sel.remove(1);
+    months.forEach(m => {
+      const o = document.createElement('option'); o.value = m;
+      o.textContent = new Date(m + '-01T00:00:00Z').toLocaleDateString('en-GB', {month: 'long', year: 'numeric', timeZone: 'UTC'});
+      sel.appendChild(o);
+    });
+    if ([...sel.options].some(o => o.value === cur)) sel.value = cur;
   });
-  if ([...wsel.options].some(o => o.value === wcur)) wsel.value = wcur;
-  if (!wsel.dataset.init && wsel.options.length > 1) {
+  if (!wsel.dataset.init && months.length) {
     wsel.dataset.init = '1';
     const cm = new Date(Date.now() + 4 * 3600 * 1000).toISOString().slice(0, 7);
-    if ([...wsel.options].some(o => o.value === cm)) wsel.value = cm;
+    if (months.includes(cm)) { wsel.value = cm; tsel.value = cm; }
   }
-  const month = wsel.value;
-  let list = all.filter(w => !month || w.date.slice(0, 7) === month).sort((a, b) => a.date < b.date ? 1 : -1);
+  let mFrom = wsel.value, mTo = tsel.value;
+  if (mFrom && mTo && mFrom > mTo) { [mFrom, mTo] = [mTo, mFrom]; wsel.value = mFrom; tsel.value = mTo; }
+  let list = all.filter(w => { const m = w.date.slice(0, 7); return (!mFrom || m >= mFrom) && (!mTo || m <= mTo); })
+    .sort((a, b) => a.date < b.date ? 1 : -1);
   const known = list.filter(w => w.amount !== null), total = known.reduce((t, w) => t + w.amount, 0);
   document.getElementById('w-total').textContent = known.length ? fmtInt(Math.round(total)) : '-';
   const clients = new Set(list.map(ckey)).size;
@@ -1138,6 +1149,7 @@ function renderWins() {
     '</tbody></table>' : '<div class="empty">No won deals for this selection.</div>';
 }
 document.getElementById('w-month').addEventListener('change', renderWins);
+document.getElementById('w-month-to').addEventListener('change', renderWins);
 document.getElementById('o-month').addEventListener('change', renderOverview);
 document.getElementById('o-from').addEventListener('change', renderOverview);
 document.getElementById('o-to').addEventListener('change', renderOverview);
