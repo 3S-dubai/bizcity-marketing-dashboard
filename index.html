@@ -360,7 +360,6 @@
   </div>
   <div class="wins-split">
     <div class="table-card"><div class="table-scroll"><div id="w-by-rep" class="loading">Loading…</div></div></div>
-    <div class="table-card"><div class="table-scroll"><div id="w-by-ad" class="loading">Loading…</div></div></div>
   </div>
   <div class="table-section">
     <div class="table-section-title"><h2>Every deal won</h2><span class="count-pill" id="w-pill">-</span></div>
@@ -1151,7 +1150,6 @@ function renderWins() {
   const repList = list; list = list.filter(w => isSales(w.rep));
   group('rep', 'Handled by', 'w-by-rep');
   list = repList;
-  group('ad', 'Ad', 'w-by-ad');
   const t = document.getElementById('w-table'); t.classList.remove('loading');
   t.innerHTML = list.length ? '<table><thead><tr><th>Created</th><th>Deal</th><th>Handled by</th><th>Company</th><th>Source</th><th>Ad</th><th class="num">Amount (AED)</th></tr></thead><tbody>' +
     list.map(w => `<tr><td>${escapeHtml(w.date)}</td><td>${escapeHtml(w.client)}</td><td>${escapeHtml(w.rep)}</td><td>${escapeHtml(w.company)}</td><td>${escapeHtml(w.source)}</td><td>${escapeHtml(w.ad)}</td><td class="num">${money(w.amount)}</td></tr>`).join('') +
