@@ -1151,8 +1151,8 @@ function renderWins() {
   group('rep', 'Handled by', 'w-by-rep');
   list = repList;
   const t = document.getElementById('w-table'); t.classList.remove('loading');
-  t.innerHTML = list.length ? '<table><thead><tr><th>Created</th><th>Deal</th><th>Handled by</th><th>Company</th><th>Source</th><th>Ad</th><th class="num">Amount (AED)</th></tr></thead><tbody>' +
-    list.map(w => `<tr><td>${escapeHtml(w.date)}</td><td>${escapeHtml(w.client)}</td><td>${escapeHtml(w.rep)}</td><td>${escapeHtml(w.company)}</td><td>${escapeHtml(w.source)}</td><td>${escapeHtml(w.ad)}</td><td class="num">${money(w.amount)}</td></tr>`).join('') +
+  t.innerHTML = list.length ? '<table><thead><tr><th>Created</th><th>Deal</th><th>Handled by</th><th>Company</th><th>Source</th><th class="num">Amount (AED)</th></tr></thead><tbody>' +
+    list.map(w => `<tr><td>${escapeHtml(w.date)}</td><td>${escapeHtml(w.client)}</td><td>${escapeHtml(w.rep)}</td><td>${escapeHtml(w.company)}</td><td>${escapeHtml(w.source)}</td><td class="num">${money(w.amount)}</td></tr>`).join('') +
     '</tbody></table>' : '<div class="empty">No won deals for this selection.</div>';
 }
 document.getElementById('w-month').addEventListener('change', renderWins);
